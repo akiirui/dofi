@@ -1,13 +1,11 @@
-use serde::{Deserialize, Serialize};
-use thiserror::Error;
+use crate::rule::Rule;
 
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
-use crate::rule::Rule;
+use thiserror::Error;
 
 const DOFI_DIR: &'static str = ".dofi";
-const DOFI_EXT: &'static str = "toml";
 
 #[derive(Error, Debug)]
 pub enum ProfileError {
@@ -21,23 +19,13 @@ pub enum ProfileError {
     ExpandHomeFailed,
     #[error(transparent)]
     StdIo(#[from] std::io::Error),
-    #[error("Profile decode failed, {0}")]
+    #[error("Profile decode failed. {0}")]
     TomlDeError(#[from] toml::de::Error),
     #[error(transparent)]
     TomlSerError(#[from] toml::ser::Error),
 }
 
-#[derive(Error, Debug)]
-pub enum ProfileInfo {
-    #[error("Add [{0}]\n")]
-    RuleAdd(String),
-    #[error("Delete [{0}]\n")]
-    RuleDelete(String),
-    #[error("")]
-    Done,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Debug)]
 pub struct Profile {
     pub profile: String,
     pub rules: BTreeMap<String, Rule>,
@@ -51,7 +39,7 @@ impl Profile {
         }
     }
 
-    pub fn add(mut self, rule: String, mut data: Rule) -> Result<ProfileInfo, ProfileError> {
+    pub fn add(mut self, rule: String, mut data: Rule) -> Result<(), ProfileError> {
         self.read()?;
 
         if self.rules.contains_key(&rule) {
@@ -61,26 +49,28 @@ impl Profile {
         shrink_home(&mut data.src)?;
         shrink_home(&mut data.dst)?;
 
-        self.rules.insert(rule.clone(), data);
+        println!("Add [{0}]\n", rule);
+        self.rules.insert(rule, data);
         self.write()?;
 
-        Ok(ProfileInfo::RuleAdd(rule))
+        Ok(())
     }
 
-    pub fn del(mut self, rule: String) -> Result<ProfileInfo, ProfileError> {
+    pub fn del(mut self, rule: String) -> Result<(), ProfileError> {
         self.read()?;
 
         if !self.rules.contains_key(&rule) {
             return Err(ProfileError::RuleNotFound(rule));
         }
 
+        println!("Delete [{0}]", rule);
         self.rules.remove(&rule);
         self.write()?;
 
-        Ok(ProfileInfo::RuleDelete(rule))
+        Ok(())
     }
 
-    pub fn apply(mut self) -> Result<ProfileInfo, ProfileError> {
+    pub fn apply(mut self) -> Result<(), ProfileError> {
         self.read()?;
 
         if self.rules.is_empty() {
@@ -91,15 +81,15 @@ impl Profile {
             expand_home(&mut rule.src)?;
             expand_home(&mut rule.dst)?;
             match rule.apply(name) {
-                Ok(info) => println!("{}", info),
+                Ok(_) => (),
                 Err(error) => eprintln!("{}", error),
             };
         }
 
-        Ok(ProfileInfo::Done)
+        Ok(())
     }
 
-    pub fn list(mut self, full: bool) -> Result<ProfileInfo, ProfileError> {
+    pub fn list(mut self, full: bool) -> Result<(), ProfileError> {
         self.read()?;
 
         if self.rules.is_empty() {
@@ -117,7 +107,7 @@ impl Profile {
             }
         }
 
-        Ok(ProfileInfo::Done)
+        Ok(())
     }
 
     fn read(&mut self) -> Result<(), ProfileError> {
@@ -144,7 +134,7 @@ impl Profile {
 
 fn profile_path(profile: &String) -> PathBuf {
     let mut path = PathBuf::from(DOFI_DIR).join(profile);
-    path.set_extension(DOFI_EXT);
+    path.set_extension("toml");
 
     path
 }

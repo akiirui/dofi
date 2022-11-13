@@ -1,91 +1,82 @@
-use structopt::StructOpt;
-
 mod profile;
 mod rule;
 
 use crate::profile::Profile;
-use crate::rule::Rule;
+use crate::rule::{Mode, Rule};
 
-#[derive(Debug, StructOpt)]
-#[structopt(name = env!("CARGO_PKG_NAME"))]
-#[structopt(version = option_env!("DOFI_VERSION").unwrap_or(env!("CARGO_PKG_VERSION")))]
-#[structopt(author = env!("CARGO_PKG_AUTHORS"))]
-#[structopt(about = env!("CARGO_PKG_DESCRIPTION"))]
-enum Opt {
-    #[structopt(display_order = 1, about = "Add rule to profile")]
+use clap::Parser;
+
+#[derive(Debug, Parser)]
+#[command(version = option_env!("DOFI_VERSION").unwrap_or(env!("CARGO_PKG_VERSION")))]
+enum Cli {
+    #[command(display_order = 1, about = "Add a rule")]
     Add {
-        #[structopt(help = "Rule name")]
+        #[arg(help = "Rule name")]
         rule: String,
-        #[structopt(help = "Path (relative or absolute)")]
+        #[arg(help = "Path (relative or absolute)")]
         src: String,
-        #[structopt(help = "Path (absolute)")]
+        #[arg(help = "Path (absolute)")]
         dst: String,
-        #[structopt(
+        #[arg(
             short,
-            long,
+            value_enum,
             help = "Rule mode",
-            default_value = "symlink",
-            possible_value("symlink"),
-            possible_value("copy"),
+            default_value = "link",
             hide_possible_values(true)
         )]
-        mode: String,
-        #[structopt(short, long, help = "Profile name", default_value = "default")]
+        mode: Mode,
+        #[arg(short, help = "Profile name", default_value = "default")]
         profile: String,
     },
-    #[structopt(display_order = 2, about = "Delete rule from profile")]
+    #[command(display_order = 2, about = "Delete a rule")]
     Del {
-        #[structopt(help = "Rule name")]
+        #[arg(help = "Rule name")]
         rule: String,
-        #[structopt(short, long, help = "Profile name", default_value = "default")]
+        #[arg(short, help = "Profile name", default_value = "default")]
         profile: String,
     },
-    #[structopt(display_order = 3, about = "Apply profile rules")]
+    #[command(display_order = 3, about = "Apply rules")]
     Apply {
-        #[structopt(help = "Profile name", default_value = "default")]
+        #[arg(help = "Profile name", default_value = "default")]
         profile: String,
     },
-    #[structopt(display_order = 4, about = "List rules of profile")]
+    #[command(display_order = 4, about = "List rules")]
     List {
-        #[structopt(help = "Profile name", default_value = "default")]
+        #[arg(help = "Profile name", default_value = "default")]
         profile: String,
-        #[structopt(short, long, help = "Prints full infomations")]
+        #[arg(short, long, help = "Print full infomations")]
         full: bool,
     },
 }
 fn main() {
-    let opt = Opt::from_args();
-    let result = match opt {
-        Opt::Add {
+    let cli = Cli::parse();
+    let mut p = Profile::new();
+    let r = match cli {
+        Cli::Add {
             rule,
             src,
             dst,
             mode,
             profile,
         } => {
-            let r = Rule { src, dst, mode };
-            let mut p = Profile::new();
             p.profile = profile;
-            p.add(rule, r)
+            p.add(rule, Rule { src, dst, mode })
         }
-        Opt::Del { rule, profile } => {
-            let mut p = Profile::new();
+        Cli::Del { rule, profile } => {
             p.profile = profile;
             p.del(rule)
         }
-        Opt::Apply { profile } => {
-            let mut p = Profile::new();
+        Cli::Apply { profile } => {
             p.profile = profile;
             p.apply()
         }
-        Opt::List { profile, full } => {
-            let mut p = Profile::new();
+        Cli::List { profile, full } => {
             p.profile = profile;
             p.list(full)
         }
     };
-    match result {
-        Ok(info) => print!("{}", info),
-        Err(error) => eprintln!("{}", error),
+    match r {
+        Ok(_) => (),
+        Err(e) => eprintln!("{}", e),
     }
 }

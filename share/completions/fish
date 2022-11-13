@@ -24,7 +24,7 @@ complete -c dofi -s h -l help -d 'Prints help information'
 complete -c dofi -s V -l version -d 'Prints version information'
 
 # Add Options
-complete -c dofi -n '__fish_seen_subcommand_from add' -s m -l mode -d 'Rule mode [default: symlink]' -xa 'symlink copy'
+complete -c dofi -n '__fish_seen_subcommand_from add' -s m -l mode -d 'Rule mode [default: link]' -xa 'link copy'
 complete -c dofi -n '__fish_seen_subcommand_from add' -s p -l profile -d 'Profile name [default: default]' -xa "$profiles"
 
 # Del Options
