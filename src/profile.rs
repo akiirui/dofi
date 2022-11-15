@@ -54,6 +54,35 @@ impl Profile {
         Ok(())
     }
 
+    pub fn show(mut self, rule: String) -> Result<()> {
+        self.read()?;
+
+        if self.rules.is_empty() {
+            bail!("Profile [{}] is empty", self.profile);
+        }
+
+        match self.rules.get(&rule) {
+            Some(v) => println!("[{}]\n{}", rule, v),
+            None => bail!("Not found rule [{}]", rule),
+        }
+
+        Ok(())
+    }
+
+    pub fn list(mut self) -> Result<()> {
+        self.read()?;
+
+        if self.rules.is_empty() {
+            bail!("Profile [{}] is empty", self.profile);
+        }
+
+        for (k, _) in self.rules {
+            println!("{}", k);
+        }
+
+        Ok(())
+    }
+
     pub fn apply(mut self) -> Result<()> {
         self.read()?;
 
@@ -74,24 +103,6 @@ impl Profile {
         Ok(())
     }
 
-    pub fn list(mut self, full: bool) -> Result<()> {
-        self.read()?;
-
-        if self.rules.is_empty() {
-            bail!("Profile [{}] is empty", self.profile);
-        }
-
-        for (k, v) in self.rules.iter() {
-            if full {
-                println!("[{}]\n{}", k, v);
-            } else {
-                println!("{}", k);
-            }
-        }
-
-        Ok(())
-    }
-
     fn read(&mut self) -> Result<()> {
         let path = profile_path(&self.profile);
 
@@ -103,7 +114,7 @@ impl Profile {
         Ok(())
     }
 
-    fn write(&self) -> Result<()> {
+    fn write(self) -> Result<()> {
         let _ = std::fs::create_dir(DOFI_DIR);
 
         let path = profile_path(&self.profile);

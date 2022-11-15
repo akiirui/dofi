@@ -35,17 +35,22 @@ enum Cli {
         #[arg(short, help = "Profile name", default_value = "default")]
         profile: String,
     },
-    #[command(display_order = 3, about = "Apply rules")]
-    Apply {
-        #[arg(help = "Profile name", default_value = "default")]
+    #[command(display_order = 3, about = "Show rule information")]
+    Show {
+        #[arg(help = "Rule name")]
+        rule: String,
+        #[arg(short, help = "Profile name", default_value = "default")]
         profile: String,
     },
     #[command(display_order = 4, about = "List rules")]
     List {
         #[arg(help = "Profile name", default_value = "default")]
         profile: String,
-        #[arg(short, long, help = "Print full information")]
-        full: bool,
+    },
+    #[command(display_order = 5, about = "Apply rules")]
+    Apply {
+        #[arg(help = "Profile name", default_value = "default")]
+        profile: String,
     },
 }
 
@@ -66,13 +71,17 @@ fn main() {
             p.profile = profile;
             p.del(rule)
         }
+        Cli::Show { rule, profile } => {
+            p.profile = profile;
+            p.show(rule)
+        }
+        Cli::List { profile } => {
+            p.profile = profile;
+            p.list()
+        }
         Cli::Apply { profile } => {
             p.profile = profile;
             p.apply()
-        }
-        Cli::List { profile, full } => {
-            p.profile = profile;
-            p.list(full)
         }
     };
 

@@ -1,6 +1,6 @@
 # Completions for dofi (A simple dotfile manager)
 
-set -l commands add del apply list help
+set -l commands add del list show apply help
 set -l profiles "(ls -- .dofi/ 2>/dev/null | string replace -- '.toml' '')"
 
 function __dofi_complete_rules
@@ -13,10 +13,11 @@ function __dofi_complete_rules
 end
 
 # Commands
-complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a add -d 'Add rule to profile'
-complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a del -d 'Delete rule from profile' -x
-complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a apply -d 'Apply profile rules' -x
-complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a list -d 'List rules of profile' -x
+complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a add -d 'Add a rule'
+complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a del -d 'Delete a rule' -x
+complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a apply -d 'Apply rules' -x
+complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a list -d 'List rules' -x
+complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a show -d 'Show rule information' -x
 complete -c dofi -n "not __fish_seen_subcommand_from $commands" -a help -d 'Prints help information' -x
 
 # Global Options
@@ -24,19 +25,22 @@ complete -c dofi -s h -l help -d 'Prints help information'
 complete -c dofi -s V -l version -d 'Prints version information'
 
 # Add Options
-complete -c dofi -n '__fish_seen_subcommand_from add' -s m -l mode -d 'Rule mode [default: link]' -xa 'link copy'
 complete -c dofi -n '__fish_seen_subcommand_from add' -s p -l profile -d 'Profile name [default: default]' -xa "$profiles"
+complete -c dofi -n '__fish_seen_subcommand_from add' -s m -l mode -d 'Rule mode [default: link]' -xa 'link copy'
 
 # Del Options
 complete -c dofi -n '__fish_seen_subcommand_from del' -s p -l profile -d 'Profile name [default: default]' -xa "$profiles"
 complete -c dofi -n '__fish_seen_subcommand_from del' -xa '(__dofi_complete_rules)'
 
-# Apply Options
-complete -c dofi -n '__fish_seen_subcommand_from apply' -xa "$profiles"
+# Show Options
+complete -c dofi -n '__fish_seen_subcommand_from show' -s p -l profile -d 'Profile name [default: default]' -xa "$profiles"
+complete -c dofi -n '__fish_seen_subcommand_from show' -xa '(__dofi_complete_rules)'
 
 # List Options
-complete -c dofi -n '__fish_seen_subcommand_from list' -s f -l full -d 'Prints full information'
 complete -c dofi -n '__fish_seen_subcommand_from list' -xa "$profiles"
+
+# Apply Options
+complete -c dofi -n '__fish_seen_subcommand_from apply' -xa "$profiles"
 
 # Help Options
 complete -c dofi -n '__fish_seen_subcommand_from help' -xa "$commands"
