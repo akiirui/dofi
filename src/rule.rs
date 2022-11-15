@@ -1,18 +1,8 @@
 use std::fmt::Display;
 use std::path::PathBuf;
 
+use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum RuleError {
-    #[error("Skiped: [{0}] source {1} not exists")]
-    SrcNotExists(String, PathBuf),
-    #[error("Skiped: [{0}] target {1} exists")]
-    DstExists(String, PathBuf),
-    #[error("Skiped: [{0}] {1} {2}")]
-    Io(String, PathBuf, std::io::Error),
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Rule {
@@ -29,6 +19,16 @@ pub enum Mode {
     Link,
 }
 
+impl Display for Rule {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Source: {}\nTarget: {}\nMode  : {}",
+            self.src, self.dst, self.mode
+        )
+    }
+}
+
 impl Display for Mode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -39,12 +39,12 @@ impl Display for Mode {
 }
 
 impl Rule {
-    pub fn apply(self, name: String) -> Result<(), RuleError> {
+    pub fn apply(self, name: String) -> Result<()> {
         let src = std::fs::canonicalize(&self.src).unwrap_or(PathBuf::from(&self.src));
         let dst = PathBuf::from(&self.dst);
 
         if !src.exists() {
-            return Err(RuleError::SrcNotExists(name, src));
+            bail!("Skiped: [{}] source {} not exists", name, src.display());
         }
 
         match self.mode {
@@ -54,36 +54,35 @@ impl Rule {
     }
 }
 
-fn apply_copy(name: String, src: PathBuf, dst: PathBuf) -> Result<(), RuleError> {
+fn apply_copy(name: String, src: PathBuf, dst: PathBuf) -> Result<()> {
     if dst.exists() {
         if is_copyed(&src, &dst) {
-            return Ok(println!("Copyed: [{0}]", name));
+            return Ok(println!("Copyed: [{}]", name));
         }
-        return Err(RuleError::DstExists(name, dst));
+        bail!("Skiped: [{}] target {} exists", name, dst.display());
     }
 
     create_parent(&name, &dst)?;
 
-    match std::fs::copy(&src, &dst) {
-        Ok(_) => Ok(println!("Copyto: [{0}] > {1}", name, dst.display())),
-        Err(err) => Err(RuleError::Io(name, dst, err)),
-    }
+    std::fs::copy(&src, &dst).with_context(|| format!("Skiped: [{}] {}", name, dst.display()))?;
+
+    Ok(println!("Copyto: [{}] > {}", name, dst.display()))
 }
 
-fn apply_link(name: String, src: PathBuf, dst: PathBuf) -> Result<(), RuleError> {
+fn apply_link(name: String, src: PathBuf, dst: PathBuf) -> Result<()> {
     if dst.exists() {
         if is_linked(&src, &dst) {
-            return Ok(println!("Linked: [{0}]", name));
+            return Ok(println!("Linked: [{}]", name));
         }
-        return Err(RuleError::DstExists(name, dst));
+        bail!("Skiped: [{}] target {} exists", name, dst.display());
     }
 
     create_parent(&name, &dst)?;
 
-    match std::os::unix::fs::symlink(&src, &dst) {
-        Ok(_) => Ok(println!("Linkto: [{0}] > {1}", name, dst.display())),
-        Err(err) => Err(RuleError::Io(name, dst, err)),
-    }
+    std::os::unix::fs::symlink(&src, &dst)
+        .with_context(|| format!("Skiped: [{}] {}", name, dst.display()))?;
+
+    Ok(println!("Linkto: [{}] > {}", name, dst.display()))
 }
 
 fn is_linked(src: &PathBuf, dst: &PathBuf) -> bool {
@@ -106,11 +105,10 @@ fn is_copyed(src: &PathBuf, dst: &PathBuf) -> bool {
     false
 }
 
-fn create_parent(name: &String, dst: &PathBuf) -> Result<(), RuleError> {
+fn create_parent(name: &String, dst: &PathBuf) -> Result<()> {
     if let Some(parent) = dst.parent() {
-        if let Err(err) = std::fs::create_dir_all(parent) {
-            return Err(RuleError::Io(name.clone(), parent.to_path_buf(), err));
-        }
+        std::fs::create_dir_all(parent)
+            .with_context(|| format!("Skiped: [{}] {}", name, dst.display()))?
     }
 
     Ok(())

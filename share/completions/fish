@@ -35,7 +35,7 @@ complete -c dofi -n '__fish_seen_subcommand_from del' -xa '(__dofi_complete_rule
 complete -c dofi -n '__fish_seen_subcommand_from apply' -xa "$profiles"
 
 # List Options
-complete -c dofi -n '__fish_seen_subcommand_from list' -s f -l full -d 'Prints full infomations'
+complete -c dofi -n '__fish_seen_subcommand_from list' -s f -l full -d 'Prints full information'
 complete -c dofi -n '__fish_seen_subcommand_from list' -xa "$profiles"
 
 # Help Options

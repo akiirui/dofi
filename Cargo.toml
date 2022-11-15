@@ -1,6 +1,6 @@
 [package]
 name = "dofi"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 authors = ["Akatsuki Rui <akiirui@outlook.com>"]
 description = "A simple dotfile manager"
@@ -14,11 +14,11 @@ repository = "https://github.com/akiirui/dofi/"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-thiserror = "1.0"
+anyhow = "1.0"
 clap = { version = "4.0", features = ["derive"] }
+dirs = "4.0"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.5"
-dirs = "4.0"
 
 [profile.release]
 lto = true

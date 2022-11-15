@@ -44,14 +44,14 @@ enum Cli {
     List {
         #[arg(help = "Profile name", default_value = "default")]
         profile: String,
-        #[arg(short, long, help = "Print full infomations")]
+        #[arg(short, long, help = "Print full information")]
         full: bool,
     },
 }
+
 fn main() {
-    let cli = Cli::parse();
     let mut p = Profile::new();
-    let r = match cli {
+    let r = match Cli::parse() {
         Cli::Add {
             rule,
             src,
@@ -75,8 +75,9 @@ fn main() {
             p.list(full)
         }
     };
+
     match r {
         Ok(_) => (),
-        Err(e) => eprintln!("{}", e),
+        Err(e) => eprintln!("{:?}", e),
     }
 }
