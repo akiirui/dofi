@@ -56,6 +56,7 @@ enum Cli {
 
 fn main() {
     let mut p = Profile::new();
+
     let r = match Cli::parse() {
         Cli::Add {
             rule,
