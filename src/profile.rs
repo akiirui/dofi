@@ -21,11 +21,11 @@ impl Profile {
         }
     }
 
-    pub fn add(mut self, rule: String, mut data: Rule) -> Result<()> {
+    pub fn add(mut self, rule: String, mut data: Rule, overwrite: bool) -> Result<()> {
         self.read()?;
 
-        if self.rules.contains_key(&rule) {
-            bail!("Rule [{}]: Duplicate", rule);
+        if self.rules.contains_key(&rule) && !overwrite {
+            bail!("Rule [{}]: Duplicate (use -f to overwrite)", rule);
         }
 
         shrink_home(&mut data.src)?;

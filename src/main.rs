@@ -27,6 +27,8 @@ enum Cli {
         mode: Mode,
         #[arg(short, help = "Profile name", default_value = "default")]
         profile: String,
+        #[arg(short = 'f', help = "Overwrite existing rule")]
+        overwrite: bool,
     },
     #[command(display_order = 2, about = "Delete a rule")]
     Del {
@@ -64,9 +66,10 @@ fn main() {
             dst,
             mode,
             profile,
+            overwrite,
         } => {
             p.profile = profile;
-            p.add(rule, Rule { src, dst, mode })
+            p.add(rule, Rule { src, dst, mode }, overwrite)
         }
         Cli::Del { rule, profile } => {
             p.profile = profile;
