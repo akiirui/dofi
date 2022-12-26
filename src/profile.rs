@@ -41,6 +41,7 @@ impl Profile {
 
     pub fn del(mut self, rule: String) -> Result<()> {
         self.read()?;
+        self.is_empty()?;
 
         if !self.rules.contains_key(&rule) {
             bail!("Not found rule [{}]", rule);
@@ -56,10 +57,7 @@ impl Profile {
 
     pub fn show(mut self, rule: String) -> Result<()> {
         self.read()?;
-
-        if self.rules.is_empty() {
-            bail!("Profile [{}] is empty", self.profile);
-        }
+        self.is_empty()?;
 
         match self.rules.get(&rule) {
             Some(v) => println!("[{}]\n{}", rule, v),
@@ -71,10 +69,7 @@ impl Profile {
 
     pub fn list(mut self) -> Result<()> {
         self.read()?;
-
-        if self.rules.is_empty() {
-            bail!("Profile [{}] is empty", self.profile);
-        }
+        self.is_empty()?;
 
         for (k, _) in self.rules {
             println!("{}", k);
@@ -85,10 +80,7 @@ impl Profile {
 
     pub fn apply(mut self) -> Result<()> {
         self.read()?;
-
-        if self.rules.is_empty() {
-            bail!("Profile [{}] is empty", self.profile);
-        }
+        self.is_empty()?;
 
         for (k, mut v) in self.rules {
             expand_home(&mut v.src)?;
@@ -123,6 +115,14 @@ impl Profile {
 
         std::fs::write(&path, data)
             .with_context(|| format!("Failed to write profile [{}]", self.profile))?;
+
+        Ok(())
+    }
+
+    fn is_empty(&self) -> Result<()> {
+        if self.rules.is_empty() {
+            bail!("Profile [{}] is empty", self.profile);
+        }
 
         Ok(())
     }
