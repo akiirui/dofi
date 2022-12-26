@@ -25,7 +25,7 @@ impl Profile {
         self.read()?;
 
         if self.rules.contains_key(&rule) {
-            bail!("Duplicate rule [{}]", rule);
+            bail!("Rule [{}]: Duplicate", rule);
         }
 
         shrink_home(&mut data.src)?;
@@ -44,7 +44,7 @@ impl Profile {
         self.is_empty()?;
 
         if !self.rules.contains_key(&rule) {
-            bail!("Not found rule [{}]", rule);
+            bail!("Rule [{}]: Not found", rule);
         }
 
         println!("Delete [{}]", rule);
@@ -61,7 +61,7 @@ impl Profile {
 
         match self.rules.get(&rule) {
             Some(v) => println!("[{}]\n{}", rule, v),
-            None => bail!("Not found rule [{}]", rule),
+            None => bail!("Rule [{}]: Not found", rule),
         }
 
         Ok(())
@@ -100,7 +100,7 @@ impl Profile {
 
         if let Ok(data) = std::fs::read(path) {
             self.rules = toml::from_slice(&data)
-                .with_context(|| format!("Failed to decode profile [{}]", self.profile))?;
+                .with_context(|| format!("Profile [{}]: Failed to decode", self.profile))?;
         }
 
         Ok(())
@@ -111,17 +111,17 @@ impl Profile {
 
         let path = profile_path(&self.profile);
         let data = toml::to_string(&self.rules)
-            .with_context(|| format!("Failed to encode profile [{}]", self.profile))?;
+            .with_context(|| format!("Profile [{}]: Failed to encode", self.profile))?;
 
         std::fs::write(&path, data)
-            .with_context(|| format!("Failed to write profile [{}]", self.profile))?;
+            .with_context(|| format!("Profile [{}]: Failed to write", self.profile))?;
 
         Ok(())
     }
 
     fn is_empty(&self) -> Result<()> {
         if self.rules.is_empty() {
-            bail!("Profile [{}] is empty", self.profile);
+            bail!("Profile [{}]: Empty profile", self.profile);
         }
 
         Ok(())
@@ -145,7 +145,7 @@ fn expand_home(path: &mut String) -> Result<()> {
                 return Ok(());
             }
         }
-        bail!("Failed to expand ~ to home path");
+        bail!("Error: Failed to expand ~ to home path");
     }
 
     Ok(())
