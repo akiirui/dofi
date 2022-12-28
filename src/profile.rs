@@ -1,6 +1,5 @@
-use crate::rule::Rule;
+use crate::rule::{Rule, Rules};
 
-use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use anyhow::{bail, Context, Result};
@@ -10,14 +9,14 @@ const DOFI_DIR: &'static str = ".dofi";
 #[derive(Debug)]
 pub struct Profile {
     pub profile: String,
-    pub rules: BTreeMap<String, Rule>,
+    pub rules: Rules,
 }
 
 impl Profile {
-    pub fn new() -> Profile {
+    pub fn init(profile: String) -> Profile {
         Profile {
-            profile: String::new(),
-            rules: BTreeMap::new(),
+            profile,
+            rules: Rules::new(),
         }
     }
 
@@ -28,8 +27,7 @@ impl Profile {
             bail!("Rule [{}]: Duplicate (use -f to overwrite)", rule);
         }
 
-        shrink_home(&mut data.src)?;
-        shrink_home(&mut data.dst)?;
+        shrink_home(&mut data)?;
 
         println!("Add [{}]", rule);
 
@@ -60,7 +58,7 @@ impl Profile {
         self.is_empty()?;
 
         match self.rules.get(&rule) {
-            Some(v) => println!("[{}]\n{}", rule, v),
+            Some(data) => println!("[{}]\n{}", rule, data),
             None => bail!("Rule [{}]: Not found", rule),
         }
 
@@ -71,8 +69,8 @@ impl Profile {
         self.read()?;
         self.is_empty()?;
 
-        for (k, _) in self.rules {
-            println!("{}", k);
+        for (rule, _) in self.rules {
+            println!("{}", rule);
         }
 
         Ok(())
@@ -82,11 +80,10 @@ impl Profile {
         self.read()?;
         self.is_empty()?;
 
-        for (k, mut v) in self.rules {
-            expand_home(&mut v.src)?;
-            expand_home(&mut v.dst)?;
+        for (rule, mut data) in self.rules {
+            expand_home(&mut data)?;
 
-            match v.apply(k) {
+            match data.apply(rule) {
                 Ok(_) => (),
                 Err(e) => eprintln!("{:#}", e),
             };
@@ -136,29 +133,32 @@ fn profile_path(profile: &String) -> PathBuf {
     path
 }
 
-fn expand_home(path: &mut String) -> Result<()> {
-    if path.starts_with("~") {
-        if let Some(home) = dirs::home_dir() {
-            if let Some(home) = home.to_str() {
-                path.remove(0);
-                path.insert_str(0, home);
-                return Ok(());
+fn expand_home(data: &mut Rule) -> Result<()> {
+    for path in [&mut data.src, &mut data.dst] {
+        if path.starts_with("~") {
+            if let Some(home) = dirs::home_dir() {
+                if let Some(home) = home.to_str() {
+                    path.remove(0);
+                    path.insert_str(0, home);
+                    return Ok(());
+                }
             }
+            bail!("Error: Failed to expand ~ to home path");
         }
-        bail!("Error: Failed to expand ~ to home path");
     }
 
     Ok(())
 }
 
-fn shrink_home(path: &mut String) -> Result<()> {
-    if let Some(home) = dirs::home_dir() {
-        if let Some(home) = home.to_str() {
-            if path.starts_with(home) {
-                path.replace_range(0..home.len(), "~");
+fn shrink_home(data: &mut Rule) -> Result<()> {
+    for path in [&mut data.src, &mut data.dst] {
+        if let Some(home) = dirs::home_dir() {
+            if let Some(home) = home.to_str() {
+                if path.starts_with(home) {
+                    path.replace_range(0..home.len(), "~");
+                }
             }
         }
     }
-
     Ok(())
 }

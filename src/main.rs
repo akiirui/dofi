@@ -11,6 +11,8 @@ use clap::Parser;
 enum Cli {
     #[command(display_order = 1, about = "Add a rule")]
     Add {
+        #[arg(short, help = "Profile name", default_value = "default")]
+        profile: String,
         #[arg(help = "Rule name")]
         rule: String,
         #[arg(help = "Path (relative or absolute)")]
@@ -25,24 +27,22 @@ enum Cli {
             hide_possible_values(true)
         )]
         mode: Mode,
-        #[arg(short, help = "Profile name", default_value = "default")]
-        profile: String,
         #[arg(short = 'f', help = "Overwrite existing rule")]
         overwrite: bool,
     },
     #[command(display_order = 2, about = "Delete a rule")]
     Del {
-        #[arg(help = "Rule name")]
-        rule: String,
         #[arg(short, help = "Profile name", default_value = "default")]
         profile: String,
+        #[arg(help = "Rule name")]
+        rule: String,
     },
     #[command(display_order = 3, about = "Show rule information")]
     Show {
-        #[arg(help = "Rule name")]
-        rule: String,
         #[arg(short, help = "Profile name", default_value = "default")]
         profile: String,
+        #[arg(help = "Rule name")]
+        rule: String,
     },
     #[command(display_order = 4, about = "List rules")]
     List {
@@ -57,36 +57,19 @@ enum Cli {
 }
 
 fn main() {
-    let mut p = Profile::new();
-
     let r = match Cli::parse() {
         Cli::Add {
+            profile,
             rule,
             src,
             dst,
             mode,
-            profile,
             overwrite,
-        } => {
-            p.profile = profile;
-            p.add(rule, Rule { src, dst, mode }, overwrite)
-        }
-        Cli::Del { rule, profile } => {
-            p.profile = profile;
-            p.del(rule)
-        }
-        Cli::Show { rule, profile } => {
-            p.profile = profile;
-            p.show(rule)
-        }
-        Cli::List { profile } => {
-            p.profile = profile;
-            p.list()
-        }
-        Cli::Apply { profile } => {
-            p.profile = profile;
-            p.apply()
-        }
+        } => Profile::init(profile).add(rule, Rule { src, dst, mode }, overwrite),
+        Cli::Del { profile, rule } => Profile::init(profile).del(rule),
+        Cli::Show { profile, rule } => Profile::init(profile).show(rule),
+        Cli::List { profile } => Profile::init(profile).list(),
+        Cli::Apply { profile } => Profile::init(profile).apply(),
     };
 
     match r {

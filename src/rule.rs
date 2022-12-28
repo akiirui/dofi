@@ -1,8 +1,11 @@
+use std::collections::BTreeMap;
 use std::fmt::Display;
 use std::path::PathBuf;
 
 use anyhow::{bail, Context, Result};
 use serde::{Deserialize, Serialize};
+
+pub type Rules = BTreeMap<String, Rule>;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Rule {
