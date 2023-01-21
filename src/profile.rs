@@ -13,6 +13,7 @@ pub struct Profile {
 }
 
 impl Profile {
+    /// Init `Profile` struct from a profile name
     pub fn init(profile: String) -> Profile {
         Profile {
             profile,
@@ -20,6 +21,7 @@ impl Profile {
         }
     }
 
+    /// Add a rule
     pub fn add(mut self, rule: String, mut data: Rule, overwrite: bool) -> Result<()> {
         self.read()?;
 
@@ -37,6 +39,7 @@ impl Profile {
         Ok(())
     }
 
+    /// Delete a rule
     pub fn del(mut self, rule: String) -> Result<()> {
         self.read()?;
         self.is_empty()?;
@@ -53,6 +56,7 @@ impl Profile {
         Ok(())
     }
 
+    /// Show rule information
     pub fn show(mut self, rule: String) -> Result<()> {
         self.read()?;
         self.is_empty()?;
@@ -65,6 +69,7 @@ impl Profile {
         Ok(())
     }
 
+    /// List rules
     pub fn list(mut self) -> Result<()> {
         self.read()?;
         self.is_empty()?;
@@ -76,6 +81,7 @@ impl Profile {
         Ok(())
     }
 
+    /// Apply rules
     pub fn apply(mut self) -> Result<()> {
         self.read()?;
         self.is_empty()?;
@@ -92,6 +98,7 @@ impl Profile {
         Ok(())
     }
 
+    /// Read profile data
     fn read(&mut self) -> Result<()> {
         let path = profile_path(&self.profile);
 
@@ -103,6 +110,7 @@ impl Profile {
         Ok(())
     }
 
+    /// Write profile data
     fn write(self) -> Result<()> {
         let _ = std::fs::create_dir(DOFI_DIR);
 
@@ -116,6 +124,7 @@ impl Profile {
         Ok(())
     }
 
+    /// Check profile is empty or not
     fn is_empty(&self) -> Result<()> {
         if self.rules.is_empty() {
             bail!("Profile [{}]: Empty profile", self.profile);
@@ -125,6 +134,9 @@ impl Profile {
     }
 }
 
+/// Return profile path
+///
+/// `.dofi/PROFILE_NAME.toml`
 fn profile_path(profile: &String) -> PathBuf {
     let mut path = PathBuf::from(DOFI_DIR).join(profile);
 
@@ -133,6 +145,9 @@ fn profile_path(profile: &String) -> PathBuf {
     path
 }
 
+/// Expand ~ to user homedir
+///
+/// `~/PATH -> /home/username/PATH`
 fn expand_home(data: &mut Rule) -> Result<()> {
     for path in [&mut data.src, &mut data.dst] {
         if path.starts_with("~") {
@@ -150,6 +165,9 @@ fn expand_home(data: &mut Rule) -> Result<()> {
     Ok(())
 }
 
+/// Shrink user homedir to ~
+///
+/// `/home/username/PATH -> ~/PATH`
 fn shrink_home(data: &mut Rule) -> Result<()> {
     for path in [&mut data.src, &mut data.dst] {
         if let Some(home) = dirs::home_dir() {

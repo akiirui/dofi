@@ -43,12 +43,9 @@ impl Display for Mode {
 
 impl Rule {
     pub fn apply(self, name: String) -> Result<()> {
-        let src = std::fs::canonicalize(&self.src).unwrap_or(PathBuf::from(&self.src));
-        let dst = PathBuf::from(&self.dst);
+        let (src, dst) = absolute_path(&self.src, &self.dst);
 
-        if !src.exists() {
-            bail!("Skiped: [{}] source {} not exists", name, src.display());
-        }
+        is_exists(&name, "source", &src)?;
 
         match self.mode {
             Mode::Copy => apply_copy(name, src, dst),
@@ -59,8 +56,8 @@ impl Rule {
 
 fn apply_copy(name: String, src: PathBuf, dst: PathBuf) -> Result<()> {
     if dst.exists() {
-        if is_copyed(&src, &dst) {
-            return Ok(println!("Copyed: [{}]", name));
+        if is_copied(&src, &dst) {
+            return Ok(println!("Copied: [{}]", name));
         }
         bail!("Skiped: [{}] target {} exists", name, dst.display());
     }
@@ -88,15 +85,17 @@ fn apply_link(name: String, src: PathBuf, dst: PathBuf) -> Result<()> {
     Ok(println!("Linkto: [{}] > {}", name, dst.display()))
 }
 
-fn is_linked(src: &PathBuf, dst: &PathBuf) -> bool {
-    if let Ok(dst) = std::fs::read_link(dst) {
-        return &dst == src;
+/// Check path exists and return error
+fn is_exists(name: &String, note: &str, path: &PathBuf) -> Result<()> {
+    if !path.exists() {
+        bail!("Skiped: [{name}] {note} {} not exists", path.display());
     }
 
-    false
+    Ok(())
 }
 
-fn is_copyed(src: &PathBuf, dst: &PathBuf) -> bool {
+/// Check if the SRC is copied to the DST
+fn is_copied(src: &PathBuf, dst: &PathBuf) -> bool {
     if let Err(_) = std::fs::read_link(&dst) {
         if let Ok(src) = std::fs::File::open(src) {
             if let Ok(dst) = std::fs::File::open(dst) {
@@ -108,6 +107,24 @@ fn is_copyed(src: &PathBuf, dst: &PathBuf) -> bool {
     false
 }
 
+/// Check if the SRC is linked to the DST
+fn is_linked(src: &PathBuf, dst: &PathBuf) -> bool {
+    if let Ok(dst) = std::fs::read_link(dst) {
+        return &dst == src;
+    }
+
+    false
+}
+
+/// Return the absolute path (SRC and DST)
+fn absolute_path(src: &String, dst: &String) -> (PathBuf, PathBuf) {
+    let src = std::fs::canonicalize(src).unwrap_or(PathBuf::from(src));
+    let dst = PathBuf::from(&dst);
+
+    (src, dst)
+}
+
+/// Create parent directories
 fn create_parent(name: &String, dst: &PathBuf) -> Result<()> {
     if let Some(parent) = dst.parent() {
         std::fs::create_dir_all(parent)
@@ -117,6 +134,10 @@ fn create_parent(name: &String, dst: &PathBuf) -> Result<()> {
     Ok(())
 }
 
+/// Check the differences between SRC and DST
+///
+/// Return `true`, If they are same.
+/// Return `false`, If they aren't same.
 fn diff_files(mut src: std::fs::File, mut dst: std::fs::File) -> bool {
     const BUF_SIZE: usize = 4096;
 
