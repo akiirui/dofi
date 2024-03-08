@@ -102,8 +102,8 @@ impl Profile {
     fn read(&mut self) -> Result<()> {
         let path = profile_path(&self.profile);
 
-        if let Ok(data) = std::fs::read(path) {
-            self.rules = toml::from_slice(&data)
+        if let Ok(data) = std::fs::read_to_string(path) {
+            self.rules = toml::from_str(&data)
                 .with_context(|| format!("Profile [{}]: Failed to decode", self.profile))?;
         }
 
