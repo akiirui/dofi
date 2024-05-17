@@ -4,9 +4,9 @@ set -l commands add del show list apply help
 set -l profiles "(ls -- .dofi/ 2>/dev/null | string replace -- '.toml' '')"
 
 function __dofi_complete_rules
-    set -l profile (string match -r -- '-p\s+\S+' (commandline -cp) | string replace -r -- '-p\s+' '')
-    if test $profile
-        dofi list -- $profile 2>/dev/null
+    set -l profile (string match -r -- '\s(?:-p|--profile)\s*\S+' (commandline -cp) | string replace -r -- '\s(-p|--profile)\s*(\S+)' '$2')
+    if test -n "$profile"
+        dofi list -p $profile 2>/dev/null
     else
         dofi list 2>/dev/null
     end

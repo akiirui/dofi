@@ -41,7 +41,7 @@ dependencies = [
 
 [[package]]
 name = "dofi"
-version = "0.1.11"
+version = "0.2.3"
 dependencies = [
  "anyhow",
  "argh",
