@@ -8,81 +8,79 @@ A simple dotfile manager
 Usage: dofi <COMMAND>
 
 Commands:
-  add    Add a rule
-  del    Delete a rule
-  show   Show rule information
-  list   List rules
-  apply  Apply rules
-  help   Print this message or the help of the given subcommand(s)
+Usage: dofi <command> [<args>]
 
 Options:
-  -h, --help     Print help information
-  -V, --version  Print version information
+  --help            display usage information
+
+Commands:
+  add               add rule
+  del               del rule
+  show              show rule information
+  list              list rules
+  apply             apply rules
 ```
 
 ### `add`
 
 ```
-Usage: dofi add [OPTIONS] <RULE> <SRC> <DST>
+Usage: dofi add <rule> <src> <dst> [-m <mode>] [-p <profile>] [-o]
 
-Arguments:
-  <RULE>  Rule name
-  <SRC>   Path (relative or absolute)
-  <DST>   Path (absolute)
+Positional Arguments:
+  rule              rule name
+  src               source path
+  dst               target path
 
 Options:
-  -m <MODE>         Rule mode [default: link]
-  -p <PROFILE>      Profile name [default: default]
-  -f                Overwrite existing rule
-  -h, --help        Print help information
+  -m, --mode        apply method [copy, link]
+  -p, --profile     profile name
+  -o, --overwrite   overwrite existing rule
+  --help            display usage information
+
 ```
 
 ### `del`
 
 ```
-Usage: dofi del [OPTIONS] <RULE>
+Usage: dofi del <rule> [-p <profile>]
 
-Arguments:
-  <RULE>  Rule name
+Positional Arguments:
+  rule              rule name
 
 Options:
-  -p <PROFILE>      Profile name [default: default]
-  -h, --help        Print help information
+  -p, --profile     profile name
+  --help            display usage information
 ```
 
 ### `show`
 
 ```
-Usage: dofi show [OPTIONS] <RULE>
+Usage: dofi show <rule> [-p <profile>]
 
-Arguments:
-  <RULE>  Rule name
+Positional Arguments:
+  rule              rule name
 
 Options:
-  -p <PROFILE>      Profile name [default: default]
-  -h, --help        Print help information
+  -p, --profile     profile name
+  --help            display usage information
 ```
 
 ### `list`
 
 ```
-Usage: dofi list [PROFILE]
-
-Arguments:
-  [PROFILE]  Profile name [default: default]
+Usage: dofi list [-p <profile>]
 
 Options:
-  -h, --help  Print help information
+  -p, --profile     profile name
+  --help            display usage information
 ```
 
 ### `apply`
 
 ```
-Usage: dofi apply [PROFILE]
-
-Arguments:
-  [PROFILE]  Profile name [default: default]
+Usage: dofi apply [-p <profile>]
 
 Options:
-  -h, --help  Print help information
+  -p, --profile     profile name
+  --help            display usage information
 ```
