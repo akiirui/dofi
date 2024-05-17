@@ -1,8 +1,7 @@
 use crate::rule::{Rule, Rules};
 
-use std::path::PathBuf;
-
 use anyhow::{bail, Context, Result};
+use std::path::PathBuf;
 
 const DOFI_DIR: &'static str = ".dofi";
 
@@ -151,7 +150,7 @@ fn profile_path(profile: &String) -> PathBuf {
 fn expand_home(data: &mut Rule) -> Result<()> {
     for path in [&mut data.src, &mut data.dst] {
         if path.starts_with("~") {
-            if let Some(home) = dirs::home_dir() {
+            if let Some(home) = home_dir() {
                 if let Some(home) = home.to_str() {
                     path.remove(0);
                     path.insert_str(0, home);
@@ -170,7 +169,7 @@ fn expand_home(data: &mut Rule) -> Result<()> {
 /// `/home/username/PATH -> ~/PATH`
 fn shrink_home(data: &mut Rule) -> Result<()> {
     for path in [&mut data.src, &mut data.dst] {
-        if let Some(home) = dirs::home_dir() {
+        if let Some(home) = home_dir() {
             if let Some(home) = home.to_str() {
                 if path.starts_with(home) {
                     path.replace_range(0..home.len(), "~");
@@ -179,4 +178,10 @@ fn shrink_home(data: &mut Rule) -> Result<()> {
         }
     }
     Ok(())
+}
+
+/// Get user homedir
+fn home_dir() -> Option<PathBuf> {
+    #[allow(deprecated)]
+    std::env::home_dir()
 }

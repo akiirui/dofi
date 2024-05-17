@@ -3,6 +3,7 @@ use std::fmt::Display;
 use std::path::PathBuf;
 
 use anyhow::{bail, Context, Result};
+use argh::FromArgValue;
 use serde::{Deserialize, Serialize};
 
 pub type Rules = BTreeMap<String, Rule>;
@@ -14,7 +15,7 @@ pub struct Rule {
     pub mode: Mode,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, clap::ValueEnum)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum Mode {
     #[serde(rename = "copy")]
     Copy,
@@ -32,15 +33,6 @@ impl Display for Rule {
     }
 }
 
-impl Display for Mode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Mode::Copy => write!(f, "copy"),
-            Mode::Link => write!(f, "link"),
-        }
-    }
-}
-
 impl Rule {
     pub fn apply(self, name: String) -> Result<()> {
         let (src, dst) = absolute_path(&self.src, &self.dst);
@@ -50,6 +42,25 @@ impl Rule {
         match self.mode {
             Mode::Copy => apply_copy(name, src, dst),
             Mode::Link => apply_link(name, src, dst),
+        }
+    }
+}
+
+impl Display for Mode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Mode::Copy => write!(f, "copy"),
+            Mode::Link => write!(f, "link"),
+        }
+    }
+}
+
+impl FromArgValue for Mode {
+    fn from_arg_value(value: &str) -> Result<Mode, String> {
+        match value {
+            "copy" => Ok(Mode::Copy),
+            "link" => Ok(Mode::Link),
+            _ => Err("Invalid mode".to_string()),
         }
     }
 }
