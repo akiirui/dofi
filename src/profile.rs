@@ -25,7 +25,10 @@ impl Profile {
         self.read()?;
 
         if self.rules.contains_key(&rule) && !overwrite {
-            bail!("Rule [{}]: Duplicate (use -f to overwrite)", rule);
+            bail!(
+                "Rule [{}]: Duplicate (use -o/--overwrite to overwrite)",
+                rule
+            );
         }
 
         shrink_home(&mut data)?;
