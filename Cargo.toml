@@ -1,6 +1,6 @@
 [package]
 name = "dofi"
-version = "0.2.4"
+version = "0.2.5"
 edition = "2024"
 authors = ["Akatsuki Rui <akiirui@outlook.com>"]
 description = "A simple dotfile manager"
