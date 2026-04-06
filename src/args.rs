@@ -57,7 +57,7 @@ struct Del {
     profile: String,
 }
 
-/// show rule information
+/// show rule
 #[derive(FromArgs, Debug)]
 #[argh(subcommand, name = "show")]
 struct Show {
@@ -85,6 +85,9 @@ struct Apply {
     /// profile name
     #[argh(option, short = 'p', default = "default_profile()")]
     profile: String,
+    /// overwrite existing files
+    #[argh(switch, short = 'o')]
+    overwrite: bool,
 }
 
 fn default_profile() -> String {
@@ -105,7 +108,9 @@ impl Dofi {
             Subcommand::Del(Del { profile, rule }) => Profile::init(profile).del(rule)?,
             Subcommand::Show(Show { profile, rule }) => Profile::init(profile).show(rule)?,
             Subcommand::List(List { profile }) => Profile::init(profile).list()?,
-            Subcommand::Apply(Apply { profile }) => Profile::init(profile).apply()?,
+            Subcommand::Apply(Apply { profile, overwrite }) => {
+                Profile::init(profile).apply(overwrite)?
+            }
         }
 
         Ok(())

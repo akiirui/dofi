@@ -1,6 +1,6 @@
 use crate::rule::{Rule, Rules};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use std::path::PathBuf;
 
 const DOFI_DIR: &'static str = ".dofi";
@@ -84,14 +84,14 @@ impl Profile {
     }
 
     /// Apply rules
-    pub fn apply(mut self) -> Result<()> {
+    pub fn apply(mut self, overwrite: bool) -> Result<()> {
         self.read()?;
         self.is_empty()?;
 
         for (rule, mut data) in self.rules {
             expand_home(&mut data)?;
 
-            match data.apply(rule) {
+            match data.apply(rule, overwrite) {
                 Ok(_) => (),
                 Err(e) => eprintln!("{:#}", e),
             };
