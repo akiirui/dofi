@@ -5,18 +5,15 @@ A simple dotfile manager
 ## Usage
 
 ```
-Usage: dofi <COMMAND>
-
-Commands:
 Usage: dofi <command> [<args>]
 
 Options:
-  --help            display usage information
+  --help, help      display usage information
 
 Commands:
   add               add rule
   del               del rule
-  show              show rule information
+  show              show rule
   list              list rules
   apply             apply rules
 ```
@@ -35,7 +32,7 @@ Options:
   -m, --mode        apply method [copy, link]
   -p, --profile     profile name
   -o, --overwrite   overwrite existing rule
-  --help            display usage information
+  --help, help      display usage information
 
 ```
 
@@ -49,7 +46,7 @@ Positional Arguments:
 
 Options:
   -p, --profile     profile name
-  --help            display usage information
+  --help, help      display usage information
 ```
 
 ### `show`
@@ -62,7 +59,7 @@ Positional Arguments:
 
 Options:
   -p, --profile     profile name
-  --help            display usage information
+  --help, help      display usage information
 ```
 
 ### `list`
@@ -72,15 +69,16 @@ Usage: dofi list [-p <profile>]
 
 Options:
   -p, --profile     profile name
-  --help            display usage information
+  --help, help      display usage information
 ```
 
 ### `apply`
 
 ```
-Usage: dofi apply [-p <profile>]
+Usage: dofi apply [-p <profile>] [-o]
 
 Options:
   -p, --profile     profile name
-  --help            display usage information
+  -o, --overwrite   overwrite existing files
+  --help, help      display usage information
 ```
