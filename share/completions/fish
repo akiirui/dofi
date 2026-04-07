@@ -41,6 +41,7 @@ complete -c dofi -n '__fish_seen_subcommand_from list' -s p -l profile -d 'Profi
 
 # Apply Options
 complete -c dofi -n '__fish_seen_subcommand_from apply' -s p -l profile -d 'Profile name [default: default]' -xa "$profiles"
+complete -c dofi -n '__fish_seen_subcommand_from apply' -s o -l overwrite -d 'overwrite existing files'
 
 # Help Options
 complete -c dofi -n '__fish_seen_subcommand_from help' -xa "$commands"
